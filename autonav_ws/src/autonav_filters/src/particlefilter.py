@@ -12,8 +12,8 @@ class Particle:
 
 class ParticleFilter:
     def __init__(self, latitudeLength, longitudeLength) -> None:
-        self.num_particles = 2
-        self.gps_noise = [0.45]
+        self.num_particles = 1
+        self.gps_noise = [0.8]
         self.odom_noise = [0.05, 0.05, 0.1]
         self.init_particles()
         self.first_gps = None
@@ -70,21 +70,25 @@ class ParticleFilter:
     
     def gps(self, gps: GPSFeedback) -> list[float]:
         if self.first_gps is None:
+            print('first gps message')
             self.first_gps = gps
-            
+        
+        #print(f"gps.latitude: {gps.latitude}")
+        #print(f"first gps latitude {self.first_gps.latitude}")
         gps_x = (gps.latitude - self.first_gps.latitude) * self.latitudeLength
+        #print(f"internal value {(gps.latitude - self.first_gps.latitude)}")
         gps_y = (self.first_gps.longitude - gps.longitude) * self.longitudeLength
     
-        #print(f"gps_x, gps_y: {gps_x}, {gps_y}")
+        print(f"gps_x, gps_y: {gps_x}, {gps_y}")
 
         count = 0
         for particle in self.particles:
-            print(f"particle {count}")
+            #print(f"particle {count}")
             #print(f"particle_x, particle_y: {particle.x}, {particle.y}")
             dist_sqrt = np.sqrt((particle.x - gps_x) ** 2 + (particle.y - gps_y) ** 2)
-            print(f"dist_sqrt {dist_sqrt}")
+            #print(f"dist_sqrt {dist_sqrt}")
             particle.weight = math.exp(-dist_sqrt / (2 * self.gps_noise[0] ** 2))
-            print(f"particle weight after reassignment {particle.weight}")
+            #print(f"particle weight after reassignment {particle.weight}")
             count += 1
 
         self.resample()

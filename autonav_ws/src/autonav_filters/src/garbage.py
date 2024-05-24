@@ -73,3 +73,5 @@ print(position_vector)
 print(gps_vector)
 
 end_result = [18.49585229987204, 18.936964199952953]
+
+
