@@ -12,7 +12,7 @@ class Particle:
 
 class ParticleFilter:
     def __init__(self, latitudeLength, longitudeLength) -> None:
-        self.num_particles = 1
+        self.num_particles = 5
         self.gps_noise = [0.8]
         self.odom_noise = [0.05, 0.05, 0.1]
         self.init_particles()
@@ -76,6 +76,7 @@ class ParticleFilter:
         #print(f"gps.latitude: {gps.latitude}")
         #print(f"first gps latitude {self.first_gps.latitude}")
         gps_x = (gps.latitude - self.first_gps.latitude) * self.latitudeLength
+        gps_x = -1
         #print(f"internal value {(gps.latitude - self.first_gps.latitude)}")
         gps_y = (self.first_gps.longitude - gps.longitude) * self.longitudeLength
     
@@ -86,9 +87,9 @@ class ParticleFilter:
             #print(f"particle {count}")
             #print(f"particle_x, particle_y: {particle.x}, {particle.y}")
             dist_sqrt = np.sqrt((particle.x - gps_x) ** 2 + (particle.y - gps_y) ** 2)
-            #print(f"dist_sqrt {dist_sqrt}")
+            print(f"dist_sqrt {dist_sqrt}")
             particle.weight = math.exp(-dist_sqrt / (2 * self.gps_noise[0] ** 2))
-            #print(f"particle weight after reassignment {particle.weight}")
+            print(f"particle weight after reassignment {particle.weight}")
             count += 1
 
         self.resample()
@@ -125,28 +126,39 @@ class ParticleFilter:
         #random.seed(30)
         new_particles = random.choices(self.particles, weights, k = self.num_particles)
 
-        #for particle in new_particles:
-            #print(f"new particles: {particle.x}, {particle.y}, {particle.theta}, {particle.weight}")
+        for particle in new_particles:
+            print(f"new particles: {particle.x}, {particle.y}, {particle.theta}, {particle.weight}")
 
         self.particles = []
         
+        mean_x = 0
+        mean_weight = 0
         for particle in new_particles:
             #np.random.seed(30)
             rand_x = np.random.normal(0, self.odom_noise[0])
-            rand_x = 0.03
+            #rand_x = 0.03
             #np.random.seed(30)
             rand_y = np.random.normal(0, self.odom_noise[1])
-            rand_y = 0.05
+            #rand_y = 0.05
 
             #print(f"rand_x, rand_y: {rand_x}, {rand_y}")
             x = particle.x + rand_x * math.cos(particle.theta) + rand_y * math.sin(particle.theta)
+            mean_x += x
+            print(f"x {x}")
             y = particle.y + rand_x * math.sin(particle.theta) + rand_y * math.cos(particle.theta)
             #print(f"x, y, theta: {x}, {y}, {particle.theta}")
             #np.random.seed(30)
             theta = np.random.normal(particle.theta, self.odom_noise[2]) % (2 * math.pi)
-            theta = 6.0
+            #theta = 6.0
             #print(f"theta: {theta}")
             self.particles.append(Particle(x, y, theta, particle.weight))
-        
+            mean_weight += particle.weight
+
+        mean_x = mean_x / self.num_particles
+        print(f"mean x {mean_x}")
+        mean_weight = mean_weight/ self.num_particles
+        print(f"mean_weight {mean_weight}")
+
+
         #for particle in self.particles:
             #print(f"new particles after resample: {particle.x}, {particle.y}, {particle.theta}, {particle.weight}")

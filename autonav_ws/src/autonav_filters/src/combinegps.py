@@ -42,5 +42,10 @@ gps_message_2.gps_fix = 4
 gps_message_2.is_locked = True
 gps_message_2.satellites = 16
 
-gps_vector = py_particle_filter.gps(gps_message_2)
+motor_message = MotorFeedback()
+
+for i in range(10000):
+    gps_vector = py_particle_filter.gps(gps_message_2)
+    py_particle_filter.feedback(motor_message)
+
 print(gps_vector)
